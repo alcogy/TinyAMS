@@ -1,3 +1,1 @@
-export default function useTimecard() {
-  
-}
+export default function useTimecard() {}
