@@ -22,7 +22,7 @@ export default function Textbox({
       )}
       <input
         type={type}
-        className="border border-gray-400 w-full px-2 py-1 rounded-md"
+        className="border border-gray-400 w-full px-2 py-1 rounded-md disabled:bg-gray-100 disabled:text-gray-500"
         placeholder={placeholder}
         disabled={disabled}
         value={value}
