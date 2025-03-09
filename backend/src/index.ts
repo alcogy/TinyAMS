@@ -1,24 +1,52 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
+import * as services from "./services";
+import { verify } from "jsonwebtoken";
 
 const app = express();
-const prisma = new PrismaClient();
 
+dotenv.config();
 app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static("public"));
 
-app.get("/", async (req: Request, res: Response) => {
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      name: true,
-    },
+// Authorization middleware;
+const verification = (req: Request, res: Response, next: Function) => {
+  if (
+    req.headers.authorization === undefined ||
+    req.headers.authorization.indexOf("Bearer ") === -1
+  ) {
+    res.status(401).send("none auth token");
+    return;
+  }
+
+  const token = req.headers.authorization.split(" ")[1];
+  const key = process.env.JWT_SECRET_KEY ? process.env.JWT_SECRET_KEY : "";
+  verify(token, key, (err, decoded) => {
+    if (err) {
+      res.status(500).send(err.message);
+      return;
+    }
+    req.body.user = (decoded as any)["user"];
+    next();
   });
-  res.status(200).send({ users: users });
-});
+};
+
+// Routing
+app.get("/", services.index);
+app.post("/login", services.login);
+app.get("/timecard", services.timecard);
+app.post("/timecard/workin", services.workin);
+app.post("/timecard/workout", services.workout);
+app.post("/timecard/breakin", services.breakin);
+app.post("/timecard/breakout", services.breakout);
+app.get("/users", services.fetchUsers);
+app.post("/user", services.postUser);
+app.put("/user", services.putUser);
+app.delete("/user", services.deleteUser);
 
 app
   .listen(8000, () => {
