@@ -48,9 +48,7 @@ export default function Timecard() {
     <>
       <header className="flex justify-between h-14 px-5 items-center bg-sky-600">
         <div>
-          <h1 className="text-white text-xl font-bold">
-            Attendance Management
-          </h1>
+          <h1 className="text-white text-xl font-bold">Bushmills</h1>
         </div>
         <div className="flex gap-5 items-center">
           <p className="text-white text-sm text-right">

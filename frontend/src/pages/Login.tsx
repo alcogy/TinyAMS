@@ -38,7 +38,7 @@ export default function Login() {
     <div className="bg-gray-200 flex justify-center items-center h-[100vh]">
       <div className="flex flex-col gap-8 bg-white w-[560px] items-center py-8 px-[72px]">
         <h1 className="text-center text-2xl font-bold text-gray-800">
-          Attendance Management
+          Bushmills
         </h1>
         <Textbox value={id} label="User ID" onChange={(v) => setId(v)} />
         <Textbox
