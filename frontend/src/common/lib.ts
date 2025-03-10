@@ -40,3 +40,10 @@ export function getFormatDate(datetime: Date): string {
     datetime.getDay()
   )}`;
 }
+
+export function getApiHeaders() {
+  return {
+    Authorization: "Bearer " + localStorage.getItem("token"),
+    "Content-Type": "application/json",
+  };
+}

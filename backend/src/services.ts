@@ -3,18 +3,20 @@ import { PrismaClient } from "@prisma/client";
 import { sign } from "jsonwebtoken";
 import { getRangeMonthStartEnd } from "./lib";
 
+/**
+ * Get View.
+ * @param req
+ * @param res
+ */
 export const index = async (req: Request, res: Response) => {
-  const prisma = new PrismaClient();
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      name: true,
-      password: true,
-    },
-  });
-  res.status(200).send({ users: users });
+  res.status(200).send({ hello: "world" });
 };
 
+/**
+ * Execute login.
+ * @param req
+ * @param res
+ */
 export const login = async (req: Request, res: Response) => {
   try {
     const jwt_secret_key = process.env.JWT_SECRET_KEY;
@@ -40,50 +42,106 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Get timecard data at the day.
+ * @param req
+ * @param res
+ */
 export const timecard = async (req: Request, res: Response) => {
   try {
-    const userID = req.body.userId;
-    const prisma = new PrismaClient();
-    // 初期化判定
-    const [from, end] = getRangeMonthStartEnd(req.body.date);
+    const userId = req.body.user.id;
+    const date = new Date(req.query.date as string);
 
-    let data = await prisma.attendance.findMany({
+    const prisma = new PrismaClient();
+    const att = await prisma.attendance.findFirst({
       where: {
-        userID: userID,
-        date: {
-          gte: from,
-          lt: end,
-        },
+        AND: [{ userId: userId }, { date: date }],
       },
     });
-    if (data.length === 0) {
-      // 初期化
-      const endDate = end.getDate();
-      const initdata = [];
-      for (let i = 1; 1 <= endDate; i++) {
-        initdata.push({
-          date: new Date(),
+
+    if (att === null) {
+      const created = await prisma.attendance.create({
+        data: {
+          date: date,
           remark: "",
-          userID: Number(userID),
-        });
-      }
-      await prisma.attendance.createMany({ data: initdata });
+          userId: userId,
+        },
+      });
+      const data = {
+        id: created.id,
+        workIn: null,
+        workOut: null,
+        breakIn: [],
+        breakOut: [],
+      };
+      res.status(200).send({ timecard: data });
+    } else {
+      const brk = await prisma.break.findMany({
+        where: {
+          attendanceId: att?.id,
+        },
+      });
+      const data = {
+        id: att.id,
+        workIn: att.workIn || null,
+        workOut: att.workOut || null,
+        breakIn: brk.map((v) => v.in),
+        breakOut: brk.map((v) => v.out),
+      };
+      res.status(200).send({ timecard: data });
     }
-    res.status(200).send({ data: data });
   } catch (e) {
-    console.log(e);
     res.status(500).send({ message: e });
   }
 };
 
+/**
+ * Update work in time.
+ * @param req
+ * @param res
+ */
 export const workin = async (req: Request, res: Response) => {
-  res.status(200).send({ message: "ok" });
+  try {
+    const id = req.body.attendanceId;
+    const prisma = new PrismaClient();
+
+    const data = await prisma.attendance.update({
+      data: { workIn: new Date() },
+      where: { id: id },
+    });
+
+    res.status(200).send({ result: data });
+  } catch (e) {
+    res.status(500).send({ message: e });
+  }
 };
 
+/**
+ * Update work out time.
+ * @param req
+ * @param res
+ */
 export const workout = async (req: Request, res: Response) => {
-  res.status(200).send({ message: "ok" });
+  try {
+    const id = req.body.attendanceId;
+    const prisma = new PrismaClient();
+
+    const data = await prisma.attendance.update({
+      data: { workOut: new Date() },
+      where: { id: id },
+    });
+
+    res.status(200).send({ result: data });
+  } catch (e) {
+    res.status(500).send({ message: e });
+  }
 };
 
+/**
+ * Registration break in time.
+ * @param req
+ * @param res
+ */
 export const breakin = async (req: Request, res: Response) => {
   try {
     const body = req.body;
@@ -100,26 +158,41 @@ export const breakin = async (req: Request, res: Response) => {
   res.status(200).send({ message: "ok" });
 };
 
+/**
+ * Registration break out time.
+ * @param req
+ * @param res
+ */
 export const breakout = async (req: Request, res: Response) => {
   try {
     const body = req.body;
     const prisma = new PrismaClient();
-    await prisma.break.update({
+    const result = await prisma.break.update({
       data: { out: new Date() },
       where: { id: body.id },
     });
-    res.status(200).send({ message: "ok" });
+    res.status(200).send({ result: result });
   } catch (e) {
     res.status(500).send({ message: e });
   }
 };
 
+/**
+ * Fetch All users.
+ * @param req
+ * @param res
+ */
 export const fetchUsers = async (req: Request, res: Response) => {
   const prisma = new PrismaClient();
   const users = await prisma.user.findMany();
   res.status(200).send({ users: users });
 };
 
+/**
+ * Create a new user.
+ * @param req
+ * @param res
+ */
 export const postUser = async (req: Request, res: Response) => {
   try {
     const body = req.body;
@@ -137,6 +210,11 @@ export const postUser = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Update user info.
+ * @param req
+ * @param res
+ */
 export const putUser = async (req: Request, res: Response) => {
   try {
     const body = req.body;
@@ -153,6 +231,11 @@ export const putUser = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Delete user.
+ * @param req
+ * @param res
+ */
 export const deleteUser = async (req: Request, res: Response) => {
   try {
     const prisma = new PrismaClient();
@@ -163,12 +246,58 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Attendance list by target user.
+ * @param req
+ * @param res
+ */
+export const listByUser = async (req: Request, res: Response) => {
+  try {
+    const userID = req.params.userId as string;
+    const prisma = new PrismaClient();
+    const [from, end] = getRangeMonthStartEnd(
+      req.query.date ? new Date(req.query.date as string) : new Date()
+    );
+
+    let data = await prisma.attendance.findMany({
+      where: {
+        userId: userID,
+        date: {
+          gte: from,
+          lt: end,
+        },
+      },
+    });
+
+    if (data.length === 0) {
+      const endDate = end.getDate();
+      const initdata = [];
+      for (let i = 1; 1 <= endDate; i++) {
+        initdata.push({
+          date: new Date(),
+          remark: "",
+          userId: userID,
+        });
+      }
+      await prisma.attendance.createMany({ data: initdata });
+    }
+    res.status(200).send({ data: data });
+  } catch (e) {
+    res.status(500).send({ message: e });
+  }
+};
+
+/**
+ * Attendance list by target user.
+ * @param req
+ * @param res
+ */
 export const detail = async (req: Request, res: Response) => {
   try {
     // TODO return user and attendance in target month.
     const prisma = new PrismaClient();
     const user = await prisma.user.findUnique({
-      where: { id: req.params.userID },
+      where: { id: req.params.userId },
     });
     res.status(200).send(user);
   } catch (e) {

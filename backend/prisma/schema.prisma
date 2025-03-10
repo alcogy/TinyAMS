@@ -26,7 +26,8 @@ model Attendance {
   workIn    DateTime?
   workOut   DateTime?
   remark    String
-  userID    Int
+  userId    String
+  @@unique([date, userId])
 }
 
 model Break {

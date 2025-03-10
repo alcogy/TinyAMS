@@ -17,6 +17,7 @@ export interface Attendance {
   remark: string;
 }
 export interface TimecardData {
+  id: number;
   workIn: Date | null;
   workOut: Date | null;
   breakIn: Date[];
@@ -41,8 +42,10 @@ export const attendance: Attendance = {
 };
 
 export const initialTimeCard: TimecardData = {
+  id: 1,
   workIn: null,
   workOut: null,
   breakIn: [],
   breakOut: [],
 };
+export const API_HOST = "http://localhost:8000/";

@@ -1,48 +1,18 @@
-import { useEffect, useState } from "react";
 import Button from "../components/timecard/Button";
 import { getDayClass, weekOfDay } from "../common/lib";
-import { TimecardData, User, initialTimeCard } from "../common/models";
-import { useNavigate } from "react-router";
+import { useTimecard } from "../hooks/useTimecard";
 
 export default function Timecard() {
-  const nav = useNavigate();
-  const [currentTime, setCurrentTime] = useState<Date>(new Date());
-  const [timecard, setTimeCard] = useState<TimecardData>(initialTimeCard);
-  const [user, setUser] = useState<User>();
-
-  async function onClockWorkIn() {
-    setTimeCard({ ...timecard, workIn: new Date() });
-  }
-  async function onClockWorkOut() {
-    setTimeCard({ ...timecard, workOut: new Date() });
-  }
-  async function onClockBreakIn() {
-    const breakIns = timecard.breakIn;
-    breakIns.push(new Date());
-    setTimeCard({ ...timecard, breakIn: breakIns });
-  }
-  async function onClockBreakOut() {
-    const breakOuts = timecard.breakOut;
-    breakOuts.push(new Date());
-    setTimeCard({ ...timecard, breakOut: breakOuts });
-  }
-
-  async function LogOut() {
-    // TODO
-    localStorage.removeItem("user");
-    nav("/login");
-  }
-
-  useEffect(() => {
-    setInterval(() => setCurrentTime(new Date()), 5000);
-    // TODO
-    const strage = JSON.parse(localStorage.getItem("user") as string) as User;
-    if (strage == null) {
-      nav("/login");
-      return;
-    }
-    setUser(strage);
-  }, []);
+  const {
+    user,
+    timecard,
+    currentTime,
+    onClockWorkIn,
+    onClockWorkOut,
+    onClockBreakIn,
+    onClockBreakOut,
+    LogOut,
+  } = useTimecard();
 
   return (
     <>

@@ -37,16 +37,17 @@ const verification = (req: Request, res: Response, next: Function) => {
 // Routing
 app.get("/", services.index);
 app.post("/login", services.login);
-app.get("/timecard", services.timecard);
-app.post("/timecard/workin", services.workin);
-app.post("/timecard/workout", services.workout);
-app.post("/timecard/breakin", services.breakin);
-app.post("/timecard/breakout", services.breakout);
+app.get("/timecard", verification, services.timecard);
+app.post("/timecard/workin", verification, services.workin);
+app.post("/timecard/workout", verification, services.workout);
+app.post("/timecard/breakin", verification, services.breakin);
+app.post("/timecard/breakout", verification, services.breakout);
 app.get("/users", services.fetchUsers);
 app.post("/user", services.postUser);
 app.put("/user", services.putUser);
 app.delete("/user", services.deleteUser);
-app.get("/detail/:userID", services.detail);
+// app.get("/list/:userId", services.listByUser);
+app.get("/detail/:userId", services.detail);
 
 app
   .listen(8000, () => {
