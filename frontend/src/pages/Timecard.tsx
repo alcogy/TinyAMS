@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import Button from "../components/timecard/Button";
 import { getDayClass, weekOfDay } from "../common/lib";
-import { TimecardData, initialTimeCard } from "../common/models";
+import { TimecardData, User, initialTimeCard } from "../common/models";
 import { useNavigate } from "react-router";
 
 export default function Timecard() {
   const nav = useNavigate();
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [timecard, setTimeCard] = useState<TimecardData>(initialTimeCard);
+  const [user, setUser] = useState<User>();
 
   async function onClockWorkIn() {
     setTimeCard({ ...timecard, workIn: new Date() });
@@ -28,12 +29,19 @@ export default function Timecard() {
 
   async function LogOut() {
     // TODO
+    localStorage.removeItem("user");
     nav("/login");
   }
 
   useEffect(() => {
     setInterval(() => setCurrentTime(new Date()), 5000);
     // TODO
+    const strage = JSON.parse(localStorage.getItem("user") as string) as User;
+    if (strage == null) {
+      nav("/login");
+      return;
+    }
+    setUser(strage);
   }, []);
 
   return (
@@ -45,7 +53,9 @@ export default function Timecard() {
           </h1>
         </div>
         <div className="flex gap-5 items-center">
-          <p className="text-white text-sm text-right">Yuichi Yamada (0001)</p>
+          <p className="text-white text-sm text-right">
+            {user?.name} ({user?.id})
+          </p>
           <button
             className="bg-gray-200 px-2 py-1 rounded-md font-bold hover:bg-gray-100"
             onClick={LogOut}

@@ -1,7 +1,7 @@
 import { useParams } from "react-router";
 import Layout from "../components/admin/Layout";
 import { useEffect, useState } from "react";
-import { users, Attendance } from "../common/models";
+import { users, Attendance, User } from "../common/models";
 import { getFormatDate, getTimeString, getDayClass } from "../common/lib";
 import BreakDialog from "../components/admin/BreakDialog";
 import Textbox from "../components/Textbox";
@@ -10,11 +10,26 @@ export default function Detail() {
   const [targetMonth, setTargetMonth] = useState<Date>(new Date());
   const [list, setList] = useState<Attendance[]>([]);
   const [open, setOpen] = useState<Boolean>(false);
+  const [user, setUser] = useState<User>();
 
   const { id } = useParams();
-  const user = users.find((v) => v.id === id);
 
   useEffect(() => {
+    (async () => {
+      const res = await fetch("http://localhost:8000/detail/" + id);
+      if (res.status !== 200) {
+        // TODO: Error
+        return;
+      }
+      const data = await res.json();
+      if (data === undefined) {
+        // TODO: Error
+        return;
+      }
+      setUser(data as User);
+    })();
+
+    // TODO for sample.
     const date: Attendance[] = [];
     for (let i = 1; i <= 28; i++) {
       const d = new Date(`2025-02-${i.toString().padStart(2, "0")}`);

@@ -6,11 +6,31 @@ import { useNavigate } from "react-router";
 export default function Login() {
   const navigate = useNavigate();
 
-  const [username, setUserName] = useState<string>("");
+  const [id, setId] = useState<string>("");
   const [pass, setPass] = useState<string>("");
 
   async function onSubmitLogin() {
     // TODO: submit to api
+    const res = await fetch("http://localhost:8000/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: id, password: pass }),
+    });
+    if (res.status !== 200) {
+      alert("Login error.");
+      return;
+    }
+    const data = await res.json();
+    const token = data["token"] as string;
+    if (token === undefined || token === null) {
+      alert("Login error.");
+      return;
+    }
+    // TODO set token to cookie.
+    localStorage.setItem("user", JSON.stringify(data["user"]));
+
     navigate("/timecard");
   }
 
@@ -20,11 +40,7 @@ export default function Login() {
         <h1 className="text-center text-2xl font-bold text-gray-800">
           Attendance Management
         </h1>
-        <Textbox
-          value={username}
-          label="Username"
-          onChange={(v) => setUserName(v)}
-        />
+        <Textbox value={id} label="User ID" onChange={(v) => setId(v)} />
         <Textbox
           value={pass}
           label="Password"

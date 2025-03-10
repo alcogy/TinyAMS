@@ -1,25 +1,65 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import Layout from "../components/admin/Layout";
-import { User, users } from "../common/models";
+import { User } from "../common/models";
 import UserEditDialog from "../components/admin/UserEditDialog";
-import { useState } from "react";
 
 export default function List() {
-  const [opan, setOpen] = useState<Boolean>(false);
+  const [opan, setOpen] = useState<boolean>(false);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
+  const [users, setUsers] = useState<User[]>([]);
   const [user, setUser] = useState<User>();
 
   const onClickAdd = () => {
     setUser(undefined);
+    setIsEdit(false);
     setOpen(true);
   };
   const onClickEdit = (user: User) => {
     setUser(user);
+    setIsEdit(true);
     setOpen(true);
   };
   const onClose = () => {
     setUser(undefined);
+    setIsEdit(false);
     setOpen(false);
   };
+
+  const onSubmit = async (user: User) => {
+    const res = await fetch("http://localhost:8000/user", {
+      method: isEdit ? "PUT" : "POST",
+      headers: {
+        Authorization: "Bearer ",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(user),
+    });
+
+    if (res.status === 200) {
+      // TODO: update user list.
+    }
+
+    setUser(undefined);
+    setIsEdit(false);
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    (async () => {
+      const res = await fetch("http://localhost:8000/users");
+      if (res.status !== 200) {
+        // TODO: Error
+        return;
+      }
+      const data = await res.json();
+      if (data["users"] === undefined) {
+        // TODO: Error
+        return;
+      }
+      setUsers(data["users"] as User[]);
+    })();
+  }, []);
 
   return (
     <Layout>
@@ -72,7 +112,14 @@ export default function List() {
             ))}
           </tbody>
         </table>
-        {opan && <UserEditDialog data={user} onClose={onClose} />}
+        {opan && (
+          <UserEditDialog
+            data={user}
+            onSubmit={onSubmit}
+            onClose={onClose}
+            isEdit={isEdit}
+          />
+        )}
       </div>
     </Layout>
   );

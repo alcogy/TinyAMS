@@ -9,8 +9,8 @@ const app = express();
 
 dotenv.config();
 app.use(cors({ origin: "*" }));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 // Authorization middleware;
@@ -47,6 +47,7 @@ app.get("/users", services.fetchUsers);
 app.post("/user", services.postUser);
 app.put("/user", services.putUser);
 app.delete("/user", services.deleteUser);
+app.get("/detail/:userID", services.detail);
 
 app
   .listen(8000, () => {
