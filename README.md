@@ -1,6 +1,5 @@
-# AttendanceManagementSystem
-
-Attendance Management System
+# Whistler
+Whistler is a attendance management system build by TypeScript/React/nodejs/Express
 
 ## Pages
 
