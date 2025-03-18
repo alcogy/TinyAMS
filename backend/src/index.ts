@@ -42,12 +42,8 @@ app.post("/timecard/workin", verification, services.workin);
 app.post("/timecard/workout", verification, services.workout);
 app.post("/timecard/breakin", verification, services.breakin);
 app.post("/timecard/breakout", verification, services.breakout);
-app.get("/users", services.fetchUsers);
-app.post("/user", services.postUser);
-app.put("/user", services.putUser);
-app.delete("/user", services.deleteUser);
-// app.get("/list/:userId", services.listByUser);
-app.get("/detail/:userId", services.detail);
+app.get("/detail/:date", verification, services.detail);
+app.put("/detail/update", verification, services.detailUpdate);
 
 app
   .listen(8000, () => {

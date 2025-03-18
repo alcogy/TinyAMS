@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { Attendance, PrismaClient, User } from "@prisma/client";
 import { sign } from "jsonwebtoken";
 import { getRangeMonthStartEnd } from "./lib";
 
@@ -71,24 +71,12 @@ export const timecard = async (req: Request, res: Response) => {
         id: created.id,
         workIn: null,
         workOut: null,
-        breakIn: [],
-        breakOut: [],
+        breakIn: null,
+        breakOut: null,
       };
       res.status(200).send({ timecard: data });
     } else {
-      const brk = await prisma.break.findMany({
-        where: {
-          attendanceId: att?.id,
-        },
-      });
-      const data = {
-        id: att.id,
-        workIn: att.workIn || null,
-        workOut: att.workOut || null,
-        breakIn: brk.map((v) => v.in),
-        breakOut: brk.map((v) => v.out),
-      };
-      res.status(200).send({ timecard: data });
+      res.status(200).send({ timecard: att });
     }
   } catch (e) {
     res.status(500).send({ message: e });
@@ -144,14 +132,14 @@ export const workout = async (req: Request, res: Response) => {
  */
 export const breakin = async (req: Request, res: Response) => {
   try {
-    const body = req.body;
+    const id = req.body.attendanceId;
     const prisma = new PrismaClient();
-    const data = {
-      attendanceId: body.attendanceId,
-      in: new Date(),
-    };
-    const result = await prisma.break.create({ data: data });
-    res.status(200).send({ result: result });
+
+    const data = await prisma.attendance.update({
+      data: { breakIn: new Date() },
+      where: { id: id },
+    });
+    res.status(200).send({ result: data });
   } catch (e) {
     res.status(500).send({ message: e });
   }
@@ -165,123 +153,14 @@ export const breakin = async (req: Request, res: Response) => {
  */
 export const breakout = async (req: Request, res: Response) => {
   try {
-    const body = req.body;
+    const id = req.body.attendanceId;
     const prisma = new PrismaClient();
-    const result = await prisma.break.update({
-      data: { out: new Date() },
-      where: { id: body.id },
+
+    const data = await prisma.attendance.update({
+      data: { breakOut: new Date() },
+      where: { id: id },
     });
-    res.status(200).send({ result: result });
-  } catch (e) {
-    res.status(500).send({ message: e });
-  }
-};
-
-/**
- * Fetch All users.
- * @param req
- * @param res
- */
-export const fetchUsers = async (req: Request, res: Response) => {
-  const prisma = new PrismaClient();
-  const users = await prisma.user.findMany();
-  res.status(200).send({ users: users });
-};
-
-/**
- * Create a new user.
- * @param req
- * @param res
- */
-export const postUser = async (req: Request, res: Response) => {
-  try {
-    const body = req.body;
-    const prisma = new PrismaClient();
-    const user = {
-      id: body.id,
-      name: body.name,
-      password: body.password,
-      active: true,
-    };
-    await prisma.user.create({ data: user });
-    res.status(200).send({ message: "ok" });
-  } catch (e) {
-    res.status(500).send({ message: e });
-  }
-};
-
-/**
- * Update user info.
- * @param req
- * @param res
- */
-export const putUser = async (req: Request, res: Response) => {
-  try {
-    const body = req.body;
-    const prisma = new PrismaClient();
-    const user = {
-      name: body.name,
-      password: body.password,
-      active: body.active,
-    };
-    await prisma.user.update({ data: user, where: { id: body.id } });
-    res.status(200).send({ message: "ok" });
-  } catch (e) {
-    res.status(500).send({ message: e });
-  }
-};
-
-/**
- * Delete user.
- * @param req
- * @param res
- */
-export const deleteUser = async (req: Request, res: Response) => {
-  try {
-    const prisma = new PrismaClient();
-    await prisma.user.delete({ where: { id: req.body.id } });
-    res.status(200).send({ message: "ok" });
-  } catch (e) {
-    res.status(500).send({ message: e });
-  }
-};
-
-/**
- * Attendance list by target user.
- * @param req
- * @param res
- */
-export const listByUser = async (req: Request, res: Response) => {
-  try {
-    const userID = req.params.userId as string;
-    const prisma = new PrismaClient();
-    const [from, end] = getRangeMonthStartEnd(
-      req.query.date ? new Date(req.query.date as string) : new Date()
-    );
-
-    let data = await prisma.attendance.findMany({
-      where: {
-        userId: userID,
-        date: {
-          gte: from,
-          lt: end,
-        },
-      },
-    });
-
-    if (data.length === 0) {
-      const endDate = end.getDate();
-      const initdata = [];
-      for (let i = 1; 1 <= endDate; i++) {
-        initdata.push({
-          date: new Date(),
-          remark: "",
-          userId: userID,
-        });
-      }
-      await prisma.attendance.createMany({ data: initdata });
-    }
-    res.status(200).send({ data: data });
+    res.status(200).send({ result: data });
   } catch (e) {
     res.status(500).send({ message: e });
   }
@@ -294,12 +173,50 @@ export const listByUser = async (req: Request, res: Response) => {
  */
 export const detail = async (req: Request, res: Response) => {
   try {
-    // TODO return user and attendance in target month.
+    const user = req.body.user;
     const prisma = new PrismaClient();
-    const user = await prisma.user.findUnique({
-      where: { id: req.params.userId },
+    const [from, end] = getRangeMonthStartEnd(new Date(req.params.date));
+
+    let data = await prisma.attendance.findMany({
+      where: {
+        userId: user.id,
+        date: {
+          gte: from,
+          lt: end,
+        },
+      },
     });
-    res.status(200).send(user);
+    res.status(200).send(data);
+  } catch (e) {
+    res.status(500).send({ message: e });
+  }
+};
+
+export const detailUpdate = async (req: Request, res: Response) => {
+  try {
+    const user = req.body.user;
+    const prisma = new PrismaClient();
+    const data = req.body.data as Attendance;
+    const result = await prisma.attendance.upsert({
+      where: { id: data.id },
+      update: {
+        workIn: data.workIn,
+        workOut: data.workOut,
+        breakIn: data.breakIn,
+        breakOut: data.breakOut,
+        remark: data.remark,
+      },
+      create: {
+        date: data.date,
+        workIn: data.workIn,
+        workOut: data.workOut,
+        breakIn: data.breakIn,
+        breakOut: data.breakOut,
+        userId: user.id,
+        remark: data.remark,
+      },
+    });
+    res.status(200).send(result);
   } catch (e) {
     res.status(500).send({ message: e });
   }

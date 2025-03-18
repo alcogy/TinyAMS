@@ -29,6 +29,7 @@ export function getDayClass(date: Date): string {
 
 export function getTimeString(datetime: Date | null): string {
   if (datetime === null) return "";
+  datetime = new Date(datetime);
   return `${datetime.getHours().toString().padStart(2, "0")}:${datetime
     .getMinutes()
     .toString()
@@ -36,9 +37,10 @@ export function getTimeString(datetime: Date | null): string {
 }
 
 export function getFormatDate(datetime: Date): string {
-  return `${datetime.getMonth() + 1}/${datetime.getDate()} ${weekOfDay(
-    datetime.getDay()
-  )}`;
+  return `${(datetime.getMonth() + 1).toString().padStart(2, "0")}/${datetime
+    .getDate()
+    .toString()
+    .padStart(2, "0")} ${weekOfDay(datetime.getDay())}`;
 }
 
 export function getApiHeaders() {

@@ -25,14 +25,9 @@ model Attendance {
   date      DateTime
   workIn    DateTime?
   workOut   DateTime?
+  breakIn   DateTime?
+  breakOut   DateTime?
   remark    String
   userId    String
   @@unique([date, userId])
-}
-
-model Break {
-  id            Int @default(autoincrement()) @id
-  attendanceId  Int
-  in            DateTime
-  out           DateTime?
 }

@@ -7,7 +7,6 @@ import {
 } from "../common/models";
 import { useNavigate } from "react-router";
 import { getApiHeaders } from "../common/lib";
-import { workerData } from "worker_threads";
 
 export function useTimecard() {
   const nav = useNavigate();
@@ -15,7 +14,10 @@ export function useTimecard() {
   const [timecard, setTimeCard] = useState<TimecardData>(initialTimeCard);
   const [user, setUser] = useState<User>();
 
-  async function onClockWorkIn() {
+  /**
+   * Post work in.
+   */
+  async function onClickWorkIn() {
     const headers = getApiHeaders();
     const res = await fetch(API_HOST + "timecard/workin", {
       method: "POST",
@@ -27,7 +29,10 @@ export function useTimecard() {
     setTimeCard({ ...timecard, workIn: new Date(result["workIn"]) });
   }
 
-  async function onClockWorkOut() {
+  /**
+   * Post work out.
+   */
+  async function onClickWorkOut() {
     const headers = getApiHeaders();
     const res = await fetch(API_HOST + "timecard/workout", {
       method: "POST",
@@ -39,25 +44,45 @@ export function useTimecard() {
     setTimeCard({ ...timecard, workOut: new Date(result["workOut"]) });
   }
 
-  async function onClockBreakIn() {
-    const breakIns = timecard.breakIn;
-    breakIns.push(new Date());
-    setTimeCard({ ...timecard, breakIn: breakIns });
-  }
-  async function onClockBreakOut() {
-    const breakOuts = timecard.breakOut;
-    breakOuts.push(new Date());
-    setTimeCard({ ...timecard, breakOut: breakOuts });
+  /**
+   * Post break in.
+   */
+  async function onClickBreakIn() {
+    const headers = getApiHeaders();
+    const res = await fetch(API_HOST + "timecard/breakin", {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify({ attendanceId: timecard.id }),
+    });
+    setTimeCard({ ...timecard, breakIn: new Date() });
   }
 
-  async function LogOut() {
-    // TODO
-    localStorage.clear();
-    nav("/login");
+  /**
+   * Post work out.
+   */
+  async function onClickBreakOut() {
+    const headers = getApiHeaders();
+    const res = await fetch(API_HOST + "timecard/breakout", {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify({ attendanceId: timecard.id }),
+    });
+    setTimeCard({ ...timecard, breakOut: new Date() });
   }
 
   useEffect(() => {
     const headers = getApiHeaders();
+    // Set user info.
+    const strage = JSON.parse(localStorage.getItem("user") as string) as User;
+    if (strage == null) {
+      nav("/login");
+      return;
+    }
+    setUser(strage);
+
+    // Set Time.
+    setInterval(() => setCurrentTime(new Date()), 5000);
+
     (async () => {
       // Get Timecard info.
       const res = await fetch(
@@ -66,20 +91,13 @@ export function useTimecard() {
           headers: headers,
         }
       );
-      const data = await res.json();
-      setTimeCard(data["timecard"] as TimecardData);
-
-      // Set user info.
-      const strage = JSON.parse(localStorage.getItem("user") as string) as User;
-      if (strage == null) {
-        nav("/login");
+      if (res.status !== 200) {
+        alert("Fetch error.");
         return;
       }
+      const data = await res.json();
 
-      setUser(strage);
-
-      // Set Time.
-      setInterval(() => setCurrentTime(new Date()), 5000);
+      setTimeCard(data["timecard"] as TimecardData);
     })();
   }, []);
 
@@ -87,10 +105,9 @@ export function useTimecard() {
     user,
     timecard,
     currentTime,
-    onClockWorkIn,
-    onClockWorkOut,
-    onClockBreakIn,
-    onClockBreakOut,
-    LogOut,
+    onClickWorkIn,
+    onClickWorkOut,
+    onClickBreakIn,
+    onClickBreakOut,
   };
 }

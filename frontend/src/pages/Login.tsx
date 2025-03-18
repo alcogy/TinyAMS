@@ -28,7 +28,7 @@ export default function Login() {
       alert("Login error.");
       return;
     }
-    // TODO set token to cookie.
+
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(data["user"]));
 
@@ -37,13 +37,19 @@ export default function Login() {
 
   return (
     <div className="bg-gray-200 flex justify-center items-center h-[100vh]">
-      <div className="flex flex-col gap-8 bg-white w-[560px] items-center py-8 px-[72px]">
-        <h1 className="text-center text-2xl font-bold text-gray-800">
+      <div className="flex flex-col gap-8 bg-white w-[560px] items-center py-8 px-[48px]">
+        <h1 className="text-center text-3xl font-bold text-gray-800">
           Bushmills
         </h1>
-        <Textbox value={id} label="User ID" onChange={(v) => setId(v)} />
+        <Textbox
+          value={id}
+          placeholder="Enter your ID"
+          label="User ID"
+          onChange={(v) => setId(v)}
+        />
         <Textbox
           value={pass}
+          placeholder="Enter the password"
           label="Password"
           type="password"
           onChange={(v) => setPass(v)}
