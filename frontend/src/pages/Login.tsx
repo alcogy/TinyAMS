@@ -39,7 +39,7 @@ export default function Login() {
     <div className="bg-gray-200 flex justify-center items-center h-[100vh]">
       <div className="flex flex-col gap-8 bg-white w-[560px] items-center py-8 px-[48px]">
         <h1 className="text-center text-3xl font-bold text-gray-800">
-          Bushmills
+          TinyAMS
         </h1>
         <Textbox
           value={id}

@@ -1,12 +1,8 @@
-# Bushmills
+# TinyAMS
 
-Bushmills is a attendance management system.
-It has two mainly functions.
+TinyAMS is a simple attendance management system.
 
-1. Timecard
-2. Attendance list on the month.
-
-build by TypeScript/React/nodejs/Express.
+This system is build by ReactJS/TypeScript/nodejs.
 
 ## Pages
 

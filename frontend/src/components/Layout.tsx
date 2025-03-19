@@ -26,7 +26,7 @@ export default function Layout({ children }: Props) {
       <header className="flex justify-between h-14 px-5 items-center bg-gray-600">
         <div>
           <h1 className="text-white text-2xl font-bold">
-            <a href="/timecard">Bushmills</a>
+            <a href="/timecard">TinyAMS</a>
           </h1>
         </div>
         <div className="flex gap-5 items-center">
