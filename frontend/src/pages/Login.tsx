@@ -2,6 +2,7 @@ import { useState } from "react";
 import Textbox from "../components/Textbox";
 import Button from "../components/Button";
 import { useNavigate } from "react-router";
+import { API_HOST } from "../common/models";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -10,8 +11,7 @@ export default function Login() {
   const [pass, setPass] = useState<string>("");
 
   async function onSubmitLogin() {
-    // TODO: submit to api
-    const res = await fetch("http://localhost:8000/login", {
+    const res = await fetch(API_HOST + "login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

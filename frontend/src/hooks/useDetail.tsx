@@ -47,6 +47,7 @@ export function useDetail() {
       }
     );
     if (res.status !== 200) {
+      alert("Error occured");
       return;
     }
     const data = (await res.json()) as Attendance[];
