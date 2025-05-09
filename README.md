@@ -6,9 +6,11 @@ This system is build by ReactJS/TypeScript/nodejs.
 
 ## Pages
 
-- Login
 - Timecard
+  ![Timecard view](/readme/screen.png)
+
 - Detail
+  ![Detail view](/readme/screen2.png)
 
 ## Functions
 
@@ -19,8 +21,5 @@ This system is build by ReactJS/TypeScript/nodejs.
   - set break out
 - Detail
   - insert remark
-  - edit work in
-  - edit work out
-  - calc break hours
+  - edit times
   - calc work hours
-  - edit break time
